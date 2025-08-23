@@ -12,6 +12,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
   const [viewerVotes, setViewerVotes] = useState({})
   const [foundItems, setFoundItems] = useState({})
   const [gameType, setGameType] = useState('') // 'item' or 'letter'
+  const [currentGiftValues, setCurrentGiftValues] = useState({}) // Track current gift values after deductions
 
   // Game items and letters for scavenger hunt
   const scavengerItems = [
@@ -42,9 +43,16 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
         return acc
       }, {})
     }
-    setScores(initialScores)
-    setViewerVotes({})
-    setFoundItems({})
+         setScores(initialScores)
+     setViewerVotes({})
+     setFoundItems({})
+     
+     // Initialize current gift values
+     const initialGiftValues = {}
+     topGifters.forEach(gifter => {
+       initialGiftValues[gifter.username] = gifter.totalValue
+     })
+     setCurrentGiftValues(initialGiftValues)
 
     // Randomly choose game type and item/letter
     const randomGameType = Math.random() < 0.5 ? 'item' : 'letter'
@@ -199,21 +207,23 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
         }
       }
 
-      if (foundData) {
-        setFoundItems(prev => ({
-          ...prev,
-          [foundData.player]: {
-            item: foundData.item,
-            timestamp: foundData.timestamp
-          }
-        }))
+             if (foundData) {
+         setFoundItems(prev => ({
+           ...prev,
+           [foundData.player]: {
+             item: foundData.item,
+             timestamp: foundData.timestamp
+           }
+         }))
 
-        // Award points for finding the item
-        setScores(prev => ({
-          ...prev,
-          [foundData.player]: (prev[foundData.player] || 0) + 50
-        }))
-      }
+         // Award points for finding the item
+         setScores(prev => ({
+           ...prev,
+           [foundData.player]: (prev[foundData.player] || 0) + 50
+         }))
+         
+         
+       }
     }
 
     // Listen for item found events
@@ -277,13 +287,63 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
     }
   }, [competitionState, scores, viewerVotes, foundItems, gameType, currentGame, onCompetitionComplete])
 
+  
+
   // Simulate item found for demo purposes
   const simulateItemFound = (player) => {
     if (competitionState === 'active') {
+      // Generate a realistic item name based on the challenge
+      let submittedItem = ''
+      
+      if (gameType === 'item') {
+        // For item challenges, use the target item or a variation
+        const variations = [
+          currentGame.target,
+          currentGame.target.toLowerCase(),
+          currentGame.target.toUpperCase(),
+          `My ${currentGame.target}`,
+          `The ${currentGame.target}`,
+          currentGame.target.replace(' ', '')
+        ]
+        submittedItem = variations[Math.floor(Math.random() * variations.length)]
+      } else {
+        // For letter challenges, generate a word starting with the target letter
+        const letterWords = {
+          'A': ['Apple', 'Airplane', 'Ant', 'Art', 'Animal'],
+          'B': ['Book', 'Ball', 'Bottle', 'Box', 'Bird'],
+          'C': ['Cup', 'Car', 'Cat', 'Chair', 'Clock'],
+          'D': ['Dog', 'Door', 'Desk', 'Doll', 'Duck'],
+          'E': ['Elephant', 'Egg', 'Ear', 'Eye', 'Earth'],
+          'F': ['Flower', 'Fish', 'Fan', 'Flag', 'Food'],
+          'G': ['Glass', 'Girl', 'Game', 'Gift', 'Garden'],
+          'H': ['Hat', 'House', 'Hand', 'Heart', 'Hair'],
+          'I': ['Ice', 'Iron', 'Ice cream', 'Insect', 'Image'],
+          'J': ['Jacket', 'Jewelry', 'Juice', 'Jump', 'Joy'],
+          'K': ['Key', 'Kitchen', 'King', 'Kite', 'Knife'],
+          'L': ['Light', 'Lamp', 'Leaf', 'Lion', 'Love'],
+          'M': ['Mirror', 'Mouse', 'Moon', 'Music', 'Money'],
+          'N': ['Notebook', 'Necklace', 'Night', 'Nose', 'Number'],
+          'O': ['Orange', 'Ocean', 'Office', 'Oil', 'Owl'],
+          'P': ['Phone', 'Pen', 'Paper', 'Plant', 'Picture'],
+          'Q': ['Queen', 'Question', 'Quilt', 'Quiet', 'Quick'],
+          'R': ['Rose', 'Ring', 'Radio', 'Rain', 'Road'],
+          'S': ['Shoe', 'Sun', 'Star', 'Spoon', 'Shirt'],
+          'T': ['Table', 'Tree', 'Toy', 'Tea', 'Time'],
+          'U': ['Umbrella', 'Uniform', 'Unicorn', 'Up', 'Use'],
+          'V': ['Vase', 'Vehicle', 'Voice', 'View', 'Village'],
+          'W': ['Watch', 'Water', 'Window', 'Wall', 'Wind'],
+          'X': ['Xylophone', 'X-ray', 'Xbox', 'Xenon', 'Xerox'],
+          'Y': ['Yellow', 'Year', 'Youth', 'Yard', 'Yoga'],
+          'Z': ['Zebra', 'Zoo', 'Zero', 'Zipper', 'Zinc']
+        }
+        const words = letterWords[currentGame.target] || ['Item']
+        submittedItem = words[Math.floor(Math.random() * words.length)]
+      }
+      
       const foundEvent = {
         data: {
           player: player,
-          item: currentGame?.target || 'Unknown Item',
+          item: submittedItem,
           timestamp: Date.now()
         }
       }
@@ -292,11 +352,11 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
       const customEvent = new CustomEvent('beemi-item-found', { detail: foundEvent })
       window.dispatchEvent(customEvent)
       
-      if (window.itemFoundHandler) {
-        window.itemFoundHandler(foundEvent)
-      }
-    }
-  }
+             if (window.itemFoundHandler) {
+         window.itemFoundHandler(foundEvent)
+       }
+     }
+   }
 
   // Simulate viewer vote for demo purposes
   const simulateVote = (votedFor) => {
@@ -349,22 +409,26 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
           <div className="participants">
             <h3>👥 Participants</h3>
             <div className="participant-list">
-              <div className="participant host">
-                <div className="participant-avatar">👑</div>
-                <div className="participant-info">
-                  <div className="participant-name">Host</div>
-                  <div className="participant-role">Game Master</div>
-                </div>
-              </div>
-              {topGifters.map((gifter, index) => (
-                <div key={gifter.username} className="participant gifter">
-                  <div className="participant-avatar">🎁</div>
-                  <div className="participant-info">
-                    <div className="participant-name">{gifter.username}</div>
-                    <div className="participant-role">Top Gifter #{index + 1}</div>
-                  </div>
-                </div>
-              ))}
+                             <div className="participant host">
+                 <div className="participant-avatar">👑</div>
+                 <div className="participant-info">
+                   <div className="participant-name">Host</div>
+                   <div className="participant-role">Game Master</div>
+                 </div>
+               </div>
+                             {topGifters.map((gifter, index) => (
+                 <div key={gifter.username} className="participant gifter">
+                   <div className="participant-avatar">🎁</div>
+                   <div className="participant-info">
+                     <div className="participant-name">{gifter.username}</div>
+                     <div className="participant-role">Top Gifter #{index + 1}</div>
+                                           <div className="participant-stats">
+                        <span className="gift-total">💰 {currentGiftValues[gifter.username] || gifter.totalValue} coins</span>
+                        <span className="gift-count">🎁 {gifter.giftCount} gifts</span>
+                      </div>
+                   </div>
+                 </div>
+               ))}
             </div>
           </div>
           <button className="start-final-button" onClick={startFinalCompetition}>
@@ -411,23 +475,33 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
               {Object.entries(scores)
                 .sort(([,a], [,b]) => b - a)
                 .map(([player, score], index) => (
-                  <div key={player} className={`score-item ${index === 0 ? 'leading' : ''}`}>
-                    <div className="player-rank">#{index + 1}</div>
-                    <div className="player-name">{player}</div>
-                    <div className="player-score">{score} pts</div>
-                    <div className="player-status">
-                      {foundItems[player] ? (
-                        <span className="found-status">✅ Found!</span>
-                      ) : (
-                        <button 
-                          className="found-button"
-                          onClick={() => simulateItemFound(player)}
-                        >
-                          Found Item
-                        </button>
+                                     <div key={player} className={`score-item ${index === 0 ? 'leading' : ''}`}>
+                     <div className="player-rank">#{index + 1}</div>
+                     <div className="player-name">
+                       {player}
+                     </div>
+                     <div className="player-score">{score} pts</div>
+                                           {player !== 'host' && topGifters.find(g => g.username === player) && (
+                        <div className="player-gift-stats">
+                          <span className="gift-stat">💰 {currentGiftValues[player] || topGifters.find(g => g.username === player).totalValue}</span>
+                          <span className="gift-stat">🎁 {topGifters.find(g => g.username === player).giftCount}</span>
+                        </div>
                       )}
-                    </div>
-                  </div>
+                                           <div className="player-status">
+                        {foundItems[player] ? (
+                          <div className="found-status-container">
+                            <span className="found-status">✅ Found!</span>
+                          </div>
+                        ) : (
+                          <button 
+                            className="found-button"
+                            onClick={() => simulateItemFound(player)}
+                          >
+                            Found Item
+                          </button>
+                        )}
+                      </div>
+                   </div>
                 ))}
             </div>
           </div>
@@ -468,6 +542,8 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
               </div>
             </div>
           </div>
+          
+          
         </div>
       )}
 

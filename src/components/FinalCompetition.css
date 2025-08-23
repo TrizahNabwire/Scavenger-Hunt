@@ -120,6 +120,31 @@
   color: #6b7280;
 }
 
+.participant-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.gift-total, .gift-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.gift-total {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+}
+
+.gift-count {
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.1);
+}
+
+
+
 .start-final-button {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
@@ -385,7 +410,10 @@
   font-weight: 600;
   color: #374151;
   font-size: 1rem;
+  position: relative;
 }
+
+
 
 .player-score {
   font-weight: 700;
@@ -393,6 +421,22 @@
   font-size: 1.1rem;
   min-width: 80px;
   text-align: right;
+}
+
+.player-gift-stats {
+  display: flex;
+  gap: 8px;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.gift-stat {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
 }
 
 .player-status {
@@ -421,6 +465,19 @@
 .found-button:hover {
   background: #059669;
   transform: scale(1.05);
+}
+
+.found-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.found-status-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
 }
 
 .competition-results {
