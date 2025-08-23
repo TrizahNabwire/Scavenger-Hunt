@@ -1,0 +1,42 @@
+{
+  "id": "scavenger-hunt_meo6nt3u0hvz",
+  "name": "Scavenger Hunt",
+  "entryPoint": "index.html",
+  "icon": "icon.png",
+  "minSdk": "0.1",
+  "description": "A Beemi interactive streaming project",
+  "version": "1.1.0",
+  "category": "other",
+  "beemi": {
+    "sdkVersion": "2.1.2",
+    "core": {
+      "required": true
+    },
+    "streams": {
+      "required": true
+    },
+    "user": {
+      "required": true
+    },
+    "app-bridge": {
+      "required": true
+    }
+  },
+  "development": {
+    "framework": "react",
+    "command": "npm run dev",
+    "url": "http://localhost:3000",
+    "port": 3000,
+    "emulatorPath": "/public/emulator/index.html",
+    "emulatorDir": "./public/emulator",
+    "postCreate": "npm install",
+    "replaceEmulatorFiles": true
+  },
+  "production": {
+    "entryPoint": "index.html",
+    "buildCommand": "npm run build",
+    "buildOutputDir": "dist",
+    "requiresBuild": true,
+    "buildTimeout": 300000
+  }
+}

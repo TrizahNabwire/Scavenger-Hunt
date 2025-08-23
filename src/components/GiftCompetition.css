@@ -1,0 +1,259 @@
+.gift-competition {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.gift-competition:hover {
+  border-color: #667eea;
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15);
+}
+
+.competition-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.competition-header h2 {
+  color: #374151;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.start-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.start-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.start-button:active {
+  transform: translateY(0);
+}
+
+.timer-section {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 12px;
+  border: 2px solid #f59e0b;
+}
+
+.timer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.timer-label {
+  font-size: 1rem;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.timer-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #d97706;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.competition-status {
+  margin-top: 8px;
+}
+
+.status-text {
+  font-size: 0.9rem;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.results-section {
+  margin-bottom: 24px;
+}
+
+.results-section h3 {
+  color: #374151;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.winners {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.winner-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid;
+  transition: all 0.2s ease;
+}
+
+.first-place {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+}
+
+.second-place {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border-color: #6b7280;
+}
+
+.winner-rank {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #374151;
+  min-width: 40px;
+}
+
+.winner-info {
+  flex: 1;
+}
+
+.winner-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.winner-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.no-winners {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 20px;
+}
+
+.live-leaderboard {
+  margin-top: 20px;
+}
+
+.live-leaderboard h4 {
+  color: #374151;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.leaderboard {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.leaderboard-item:hover {
+  background: #f1f3f4;
+  transform: translateX(4px);
+}
+
+.leaderboard-item:last-child {
+  margin-bottom: 0;
+}
+
+.rank {
+  font-weight: 700;
+  color: #667eea;
+  min-width: 30px;
+  font-size: 0.9rem;
+}
+
+.gifter-name {
+  flex: 1;
+  font-weight: 500;
+  color: #374151;
+}
+
+.gifter-value {
+  font-weight: 600;
+  color: #059669;
+  font-size: 0.9rem;
+}
+
+.no-gifts {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .competition-header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .timer {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .winner-stats {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .leaderboard-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
