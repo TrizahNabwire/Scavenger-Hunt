@@ -131,3 +131,4 @@ export default function VoteSimulator({ participants, isActive }) {
     </div>
   )
 }
+

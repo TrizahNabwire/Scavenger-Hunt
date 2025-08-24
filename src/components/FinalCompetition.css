@@ -22,14 +22,14 @@
 
 .competition-header h2 {
   color: #374151;
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 600;
   margin: 0 0 8px 0;
 }
 
 .competition-description {
   color: #6b7280;
-  font-size: 1rem;
+  font-size: 0.8rem;
   margin: 0;
 }
 
@@ -58,7 +58,7 @@
 
 .participants h3 {
   color: #374151;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 16px;
 }
@@ -111,13 +111,14 @@
 .participant-name {
   font-weight: 600;
   color: #374151;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   margin-bottom: 4px;
 }
 
 .participant-role {
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   color: #6b7280;
+  padding-bottom: 4px;
 }
 
 .participant-stats {
@@ -127,7 +128,7 @@
 }
 
 .gift-total, .gift-count {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;

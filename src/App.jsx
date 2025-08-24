@@ -51,8 +51,8 @@ function App() {
     <BeemiProvider>
       <div className="app">
         <div className="header">
-          <h1>🎁 Scavenger Hunt - Gift Competition</h1>
-          <p className="subtitle">Compete with gifts, win the ultimate challenge!</p>
+          <h1>Scavenger Hunt</h1>
+          <p className="subtitle">Every gift brings you closer to victory!</p>
         </div>
         
         <div className="content">

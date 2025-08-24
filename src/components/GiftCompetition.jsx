@@ -8,9 +8,29 @@ export default function GiftCompetition({ isActive, onCompetitionEnd }) {
   const [gifters, setGifters] = useState({})
   const [isRunning, setIsRunning] = useState(false)
   const [topGifters, setTopGifters] = useState([])
+  const [isHost, setIsHost] = useState(false)
 
-  // Start the competition
+  // Check if current user is host
+  useEffect(() => {
+    if (!beemi || !isConnected) return
+
+    // Check if user is host through Beemi SDK
+    if (beemi.user && beemi.user.role === 'host') {
+      setIsHost(true)
+    } else if (beemi.streams && beemi.streams.user) {
+      // Alternative check for host status
+      setIsHost(beemi.streams.user.role === 'host')
+    } else {
+      // For development/testing, assume host if no specific role detected
+      // In production, this should be more restrictive
+      setIsHost(true)
+    }
+  }, [beemi, isConnected])
+
+  // Start the competition (host only)
   const startCompetition = () => {
+    if (!isHost) return
+    
     setIsRunning(true)
     setTimeLeft(40)
     setGifters({})
@@ -136,9 +156,17 @@ export default function GiftCompetition({ isActive, onCompetitionEnd }) {
       <div className="competition-header">
         <h2>🎁 Gift Competition</h2>
         {!isRunning && timeLeft === 40 && (
-          <button className="start-button" onClick={startCompetition}>
-            Start Competition
-          </button>
+          <>
+            {isHost ? (
+              <button className="start-button" onClick={startCompetition}>
+                Start Competition
+              </button>
+            ) : (
+              <div className="waiting-for-host">
+                <span className="host-message">⏳ Waiting for host to start...</span>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -173,7 +201,18 @@ export default function GiftCompetition({ isActive, onCompetitionEnd }) {
               ))}
             </div>
           ) : (
-            <p className="no-winners">No gifts received during competition</p>
+            <div className="no-gifts-section">
+              <p className="no-winners">No gifts received during competition</p>
+              {isHost ? (
+                <button className="restart-button" onClick={startCompetition}>
+                  🔄 Start Competition Again
+                </button>
+              ) : (
+                <div className="waiting-for-host">
+                  <span className="host-message">⏳ Waiting for host to restart...</span>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}

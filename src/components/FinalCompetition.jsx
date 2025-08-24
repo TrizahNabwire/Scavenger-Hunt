@@ -400,7 +400,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
       <div className="competition-header">
         <h2>🏆 Final Competition</h2>
         <p className="competition-description">
-          Top 2 gifters join the host in the ultimate scavenger hunt challenge!
+        Only the Top 2 Gifters get in on the scavenger hunt!
         </p>
       </div>
 

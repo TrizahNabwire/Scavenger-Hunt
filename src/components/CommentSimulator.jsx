@@ -6,23 +6,48 @@ export default function CommentSimulator({ participants, isActive }) {
   const { beemi, isConnected } = useBeemi()
   const [isSimulating, setIsSimulating] = useState(false)
   const [simulationInterval, setSimulationInterval] = useState(null)
-  const [customMessage, setCustomMessage] = useState('')
+  const [customComment, setCustomComment] = useState('')
 
-  const commentTemplates = [
-    'I think {participant} will win!',
-    'Go {participant}!',
-    '{participant} is going to find it first',
-    'Vote for {participant}',
-    '{participant} has this in the bag',
-    'My money is on {participant}',
-    '{participant} will definitely win',
-    'Good luck {participant}!',
-    'I believe in {participant}',
-    '{participant} is the best!'
+  const exampleComments = [
+    "Good luck everyone! 🍀",
+    "This is so exciting! 🎉",
+    "Who do you think will win? 🤔",
+    "Go team! 💪",
+    "Amazing competition! ⭐",
+    "I'm rooting for you! 📣",
+    "This is intense! 😱",
+    "What a challenge! 🏆",
+    "Keep going! 🚀",
+    "You've got this! 💯",
+    "So close! 😮",
+    "Incredible effort! 👏",
+    "The suspense is killing me! 😬",
+    "What a race! 🏃‍♂️",
+    "Edge of my seat! 🪑"
   ]
 
-  const sendCommentEvent = (message, username) => {
-    if (!beemi || !isConnected || !isActive) return
+  const participantComments = {
+    host: [
+      "Welcome to the final challenge! 🎯",
+      "The item is hidden somewhere in this area! 🔍",
+      "Remember, first to find it wins! 🏆",
+      "Good luck to all participants! 🍀",
+      "The clock is ticking! ⏰"
+    ],
+    default: [
+      "I think I see something! 👀",
+      "Checking over here! 🔍",
+      "This is harder than I thought! 😅",
+      "Still searching! 🕵️‍♂️",
+      "Almost there! 💪",
+      "Where could it be? 🤔",
+      "Getting closer! 🎯",
+      "This is challenging! 😤"
+    ]
+  }
+
+  const sendCommentEvent = (username, message) => {
+    if (!beemi || !isConnected) return
 
     const commentEvent = {
       data: {
@@ -30,44 +55,46 @@ export default function CommentSimulator({ participants, isActive }) {
           username: username,
           displayName: username
         },
-        message: message,
+        comment: {
+          message: message
+        },
         timestamp: new Date().toISOString()
       }
     }
 
     // Simulate the comment event
-    const customEvent = new CustomEvent('beemi-chat', { detail: commentEvent })
+    const customEvent = new CustomEvent('beemi-comment', { detail: commentEvent })
     window.dispatchEvent(customEvent)
     
-    // Also dispatch to the chat handler if available
-    if (window.chatHandler) {
-      window.chatHandler(commentEvent)
+    if (window.commentHandler) {
+      window.commentHandler(commentEvent)
     }
 
     console.log('💬 Simulated comment:', commentEvent)
   }
 
   const sendRandomComment = () => {
-    if (!participants || participants.length === 0) return
+    const randomComment = exampleComments[Math.floor(Math.random() * exampleComments.length)]
+    const randomUser = 'Viewer_' + Math.floor(Math.random() * 1000)
+    sendCommentEvent(randomUser, randomComment)
+  }
 
-    const randomParticipant = participants[Math.floor(Math.random() * participants.length)]
-    const randomTemplate = commentTemplates[Math.floor(Math.random() * commentTemplates.length)]
-    const message = randomTemplate.replace('{participant}', randomParticipant)
-    const username = 'Viewer_' + Math.floor(Math.random() * 1000)
-
-    sendCommentEvent(message, username)
+  const sendParticipantComment = (participant) => {
+    const comments = participantComments[participant] || participantComments.default
+    const randomComment = comments[Math.floor(Math.random() * comments.length)]
+    sendCommentEvent(participant, randomComment)
   }
 
   const sendCustomComment = () => {
-    if (!customMessage.trim()) return
-
-    const username = 'Viewer_' + Math.floor(Math.random() * 1000)
-    sendCommentEvent(customMessage, username)
-    setCustomMessage('')
+    if (!customComment.trim()) return
+    
+    const randomUser = 'Viewer_' + Math.floor(Math.random() * 1000)
+    sendCommentEvent(randomUser, customComment)
+    setCustomComment('')
   }
 
   const startCommentSimulation = () => {
-    if (isSimulating || !participants || participants.length === 0) return
+    if (isSimulating) return
 
     setIsSimulating(true)
     const interval = setInterval(() => {
@@ -85,30 +112,12 @@ export default function CommentSimulator({ participants, isActive }) {
     setIsSimulating(false)
   }
 
-  const sendParticipantComment = (participant) => {
-    const randomTemplate = commentTemplates[Math.floor(Math.random() * commentTemplates.length)]
-    const message = randomTemplate.replace('{participant}', participant)
-    const username = 'Viewer_' + Math.floor(Math.random() * 1000)
-    sendCommentEvent(message, username)
-  }
-
-  if (!isConnected || !isActive) {
+  if (!isConnected) {
     return (
       <div className="comment-simulator">
         <div className="simulator-header">
           <h3>💬 Comment Simulator</h3>
-          <p>{!isConnected ? 'Waiting for Beemi connection...' : 'Competition not active'}</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!participants || participants.length === 0) {
-    return (
-      <div className="comment-simulator">
-        <div className="simulator-header">
-          <h3>💬 Comment Simulator</h3>
-          <p>No participants available for commenting</p>
+          <p>Waiting for Beemi connection...</p>
         </div>
       </div>
     )
@@ -118,7 +127,7 @@ export default function CommentSimulator({ participants, isActive }) {
     <div className="comment-simulator">
       <div className="simulator-header">
         <h3>💬 Comment Simulator</h3>
-        <p>Test how comments with participant names count as votes</p>
+        <p>Test chat comments during the competition</p>
       </div>
 
       <div className="simulator-controls">
@@ -126,7 +135,7 @@ export default function CommentSimulator({ participants, isActive }) {
           className={`simulate-button ${isSimulating ? 'stop' : 'start'}`}
           onClick={isSimulating ? stopCommentSimulation : startCommentSimulation}
         >
-          {isSimulating ? '⏹️ Stop Comment Simulation' : '▶️ Start Comment Simulation'}
+          {isSimulating ? '⏹️ Stop Comments' : '▶️ Start Comments'}
         </button>
         
         <button 
@@ -150,56 +159,58 @@ export default function CommentSimulator({ participants, isActive }) {
         <div className="comment-input-section">
           <input
             type="text"
-            value={customMessage}
-            onChange={(e) => setCustomMessage(e.target.value)}
-            placeholder="Type a message with a participant name..."
             className="comment-input"
+            placeholder="Type your comment here..."
+            value={customComment}
+            onChange={(e) => setCustomComment(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && sendCustomComment()}
             disabled={isSimulating}
           />
           <button 
             className="send-comment-button"
             onClick={sendCustomComment}
-            disabled={!customMessage.trim() || isSimulating}
+            disabled={isSimulating || !customComment.trim()}
           >
             Send
           </button>
         </div>
       </div>
 
-      <div className="participant-comments">
-        <h4>Quick Comment for Participants:</h4>
-        <div className="comment-buttons">
-          {participants.map((participant, index) => (
-            <button 
-              key={participant}
-              className="participant-comment-button"
-              onClick={() => sendParticipantComment(participant)}
-              disabled={isSimulating}
-            >
-              Comment for {participant}
-            </button>
-          ))}
+      {participants && participants.length > 0 && (
+        <div className="participant-comments">
+          <h4>Participant Comments:</h4>
+          <div className="comment-buttons">
+            {participants.map((participant) => (
+              <button 
+                key={participant}
+                className="participant-comment-button"
+                onClick={() => sendParticipantComment(participant)}
+                disabled={isSimulating}
+              >
+                {participant} comment
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="comment-info">
-        <h4>How Comment Voting Works:</h4>
+        <h4>Comment Instructions:</h4>
         <div className="info-content">
-          <p>• Comments containing participant names count as votes</p>
-          <p>• Names are matched case-insensitively</p>
-          <p>• Examples: "Go host!", "Alice will win", "Vote for Bob"</p>
-          <p>• Each viewer can only vote once (latest comment counts)</p>
-          <p>• Use the buttons above or type custom messages</p>
+          <p>• Viewers can chat during the competition to show support</p>
+          <p>• Participants can also send updates about their progress</p>
+          <p>• Use the buttons above to simulate different types of comments</p>
+          <p>• Or start automatic simulation to generate random viewer comments</p>
         </div>
       </div>
 
       <div className="example-comments">
-        <h4>Example Comments That Count as Votes:</h4>
+        <h4>Example Comments:</h4>
         <div className="examples-list">
-          {participants.map(participant => (
-            <div key={participant} className="example-item">
-              <span className="example-participant">{participant}:</span>
-              <span className="example-comment">"I think {participant} will find it first!"</span>
+          {exampleComments.slice(0, 8).map((comment, index) => (
+            <div key={index} className="example-item">
+              <span className="example-participant">Viewer:</span>
+              <span className="example-comment">{comment}</span>
             </div>
           ))}
         </div>
