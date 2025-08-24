@@ -161,13 +161,13 @@ function App() {
           )}
 
           {/* Gift Simulator for Testing - Commented out for real viewers */}
-          {/* <GiftSimulator /> */}
+          <GiftSimulator />
 
           {/* Vote Simulator - Commented out for production */}
-          {/* <VoteSimulator participants={showFinalCompetition ? ['host', ...topGifters.map(g => g.username)] : []} isActive={showFinalCompetition} /> */}
+          <VoteSimulator participants={showFinalCompetition ? ['host', ...topGifters.map(g => g.username)] : []} isActive={showFinalCompetition} />
 
           {/* Comment Simulator - Commented out for production */}
-          {/* <CommentSimulator participants={showFinalCompetition ? ['host', ...topGifters.map(g => g.username)] : []} isActive={showFinalCompetition} /> */}
+          <CommentSimulator participants={showFinalCompetition ? ['host', ...topGifters.map(g => g.username)] : []} isActive={showFinalCompetition} />
 
           {/* Chat Comments */}
           <CommentList comments={comments} setComments={setComments} />
