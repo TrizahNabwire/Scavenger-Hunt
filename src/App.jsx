@@ -52,7 +52,7 @@ function App() {
       <div className="app">
         <div className="header">
           <h1>Scavenger Hunt</h1>
-          <p className="subtitle">Every gift brings you closer to victory!</p>
+          <p className="subtitle">Join the hunt, enjoy the surprises!</p>
         </div>
         
         <div className="content">
