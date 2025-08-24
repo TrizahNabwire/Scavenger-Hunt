@@ -34,7 +34,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
   const startFinalCompetition = () => {
     setCompetitionState('active')
     setCompetitionTime(60)
-    
+
     // Initialize scores for all participants
     const initialScores = {
       host: 0,
@@ -43,16 +43,16 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
         return acc
       }, {})
     }
-         setScores(initialScores)
-     setViewerVotes({})
-     setFoundItems({})
-     
-     // Initialize current gift values
-     const initialGiftValues = {}
-     topGifters.forEach(gifter => {
-       initialGiftValues[gifter.username] = gifter.totalValue
-     })
-     setCurrentGiftValues(initialGiftValues)
+    setScores(initialScores)
+    setViewerVotes({})
+    setFoundItems({})
+
+    // Initialize current gift values
+    const initialGiftValues = {}
+    topGifters.forEach(gifter => {
+      initialGiftValues[gifter.username] = gifter.totalValue
+    })
+    setCurrentGiftValues(initialGiftValues)
 
     // Randomly choose game type and item/letter
     const randomGameType = Math.random() < 0.5 ? 'item' : 'letter'
@@ -82,9 +82,9 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
 
     const handleVote = (event) => {
       console.log('🗳️ Vote event received:', event)
-      
+
       let voteData = null
-      
+
       if (event.data && event.data.vote) {
         voteData = {
           username: event.data.user?.username || event.data.user?.displayName || event.data.user,
@@ -113,10 +113,10 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
     // Handle chat comments as votes
     const handleChatVote = (event) => {
       console.log('💬 Chat event received for voting:', event)
-      
+
       let message = ''
       let username = ''
-      
+
       // Extract message and username from different event formats
       if (event.data && event.data.message) {
         message = event.data.message.toLowerCase().trim()
@@ -130,25 +130,50 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
       }
 
       if (message && username) {
-        // Check if the message contains a participant name
-        const participants = ['host', ...topGifters.map(g => g.username.toLowerCase())]
+        // Check for "wrong item" comments to penalize players
+        const wrongItemPhrases = ['wrong item', 'fake item', 'not correct', 'incorrect item', 'wrong thing']
+        const isWrongItemComment = wrongItemPhrases.some(phrase => message.includes(phrase))
         
-        for (const participant of participants) {
-          if (message.includes(participant)) {
-            console.log(`🗳️ Vote detected from comment: ${username} voted for ${participant}`)
-            
-            // Use the original case for the participant name
-            const originalParticipant = participant === 'host' ? 'host' : 
-              topGifters.find(g => g.username.toLowerCase() === participant)?.username || participant
-            
-            setViewerVotes(prev => ({
-              ...prev,
-              [username]: {
-                votedFor: originalParticipant,
-                timestamp: Date.now()
-              }
-            }))
-            break
+        if (isWrongItemComment) {
+          // Check which participant is being called out
+          const participants = ['host', ...topGifters.map(g => g.username.toLowerCase())]
+          
+          for (const participant of participants) {
+            if (message.includes(participant)) {
+              const originalParticipant = participant === 'host' ? 'host' :
+                topGifters.find(g => g.username.toLowerCase() === participant)?.username || participant
+              
+              // Deduct 10 points for wrong item
+              setScores(prev => ({
+                ...prev,
+                [originalParticipant]: Math.max(0, (prev[originalParticipant] || 0) - 10)
+              }))
+              
+              console.log(`❌ Wrong item penalty: ${originalParticipant} lost 10 points`)
+              break
+            }
+          }
+        } else {
+          // Check if the message contains a participant name for voting
+          const participants = ['host', ...topGifters.map(g => g.username.toLowerCase())]
+
+          for (const participant of participants) {
+            if (message.includes(participant)) {
+              console.log(`🗳️ Vote detected from comment: ${username} voted for ${participant}`)
+
+              // Use the original case for the participant name
+              const originalParticipant = participant === 'host' ? 'host' :
+                topGifters.find(g => g.username.toLowerCase() === participant)?.username || participant
+
+              setViewerVotes(prev => ({
+                ...prev,
+                [username]: {
+                  votedFor: originalParticipant,
+                  timestamp: Date.now()
+                }
+              }))
+              break
+            }
           }
         }
       }
@@ -171,7 +196,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
 
     window.addEventListener('beemi-vote', handleSimulatedVote)
     window.addEventListener('beemi-chat', handleSimulatedChat)
-    
+
     // Store the vote handler globally
     window.voteHandler = handleVote
     window.chatHandler = handleChatVote
@@ -190,9 +215,9 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
 
     const handleItemFound = (event) => {
       console.log('🎯 Item found event received:', event)
-      
+
       let foundData = null
-      
+
       if (event.data && event.data.found) {
         foundData = {
           player: event.data.player,
@@ -207,23 +232,23 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
         }
       }
 
-             if (foundData) {
-         setFoundItems(prev => ({
-           ...prev,
-           [foundData.player]: {
-             item: foundData.item,
-             timestamp: foundData.timestamp
-           }
-         }))
+      if (foundData) {
+        setFoundItems(prev => ({
+          ...prev,
+          [foundData.player]: {
+            item: foundData.item,
+            timestamp: foundData.timestamp
+          }
+        }))
 
-         // Award points for finding the item
-         setScores(prev => ({
-           ...prev,
-           [foundData.player]: (prev[foundData.player] || 0) + 50
-         }))
-         
-         
-       }
+        // Award points for finding the item
+        setScores(prev => ({
+          ...prev,
+          [foundData.player]: (prev[foundData.player] || 0) + 50
+        }))
+
+
+      }
     }
 
     // Listen for item found events
@@ -237,7 +262,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
     }
 
     window.addEventListener('beemi-item-found', handleSimulatedItemFound)
-    
+
     // Store the item found handler globally
     window.itemFoundHandler = handleItemFound
 
@@ -268,12 +293,12 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
   useEffect(() => {
     if (competitionState === 'completed') {
       const sortedPlayers = Object.entries(scores)
-        .sort(([,a], [,b]) => b - a)
-      
+        .sort(([, a], [, b]) => b - a)
+
       if (sortedPlayers.length > 0) {
         setWinner(sortedPlayers[0])
       }
-      
+
       if (onCompetitionComplete) {
         onCompetitionComplete({
           winner: sortedPlayers[0],
@@ -287,14 +312,14 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
     }
   }, [competitionState, scores, viewerVotes, foundItems, gameType, currentGame, onCompetitionComplete])
 
-  
+
 
   // Handle item found - player wins immediately
   const simulateItemFound = (player) => {
     if (competitionState === 'active') {
       // Generate a realistic item name based on the challenge
       let submittedItem = ''
-      
+
       if (gameType === 'item') {
         // For item challenges, use the target item or a variation
         const variations = [
@@ -339,7 +364,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
         const words = letterWords[currentGame.target] || ['Item']
         submittedItem = words[Math.floor(Math.random() * words.length)]
       }
-      
+
       // Mark item as found for this player
       setFoundItems(prev => ({
         ...prev,
@@ -391,7 +416,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
       // Dispatch simulated event
       const customEvent = new CustomEvent('beemi-item-found', { detail: foundEvent })
       window.dispatchEvent(customEvent)
-      
+
       if (window.itemFoundHandler) {
         window.itemFoundHandler(foundEvent)
       }
@@ -417,7 +442,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
       // Dispatch simulated event
       const customEvent = new CustomEvent('beemi-vote', { detail: voteEvent })
       window.dispatchEvent(customEvent)
-      
+
       if (window.voteHandler) {
         window.voteHandler(voteEvent)
       }
@@ -440,7 +465,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
       <div className="competition-header">
         <h2>🏆 Final Competition</h2>
         <p className="competition-description">
-        Only the Top 2 Gifters get in on the scavenger hunt!
+          Only the Top 2 Gifters get in on the scavenger hunt!
         </p>
       </div>
 
@@ -449,26 +474,26 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
           <div className="participants">
             <h3>👥 Participants</h3>
             <div className="participant-list">
-                             <div className="participant host">
-                 <div className="participant-avatar">👑</div>
-                 <div className="participant-info">
-                   <div className="participant-name">Host</div>
-                   <div className="participant-role">Game Master</div>
-                 </div>
-               </div>
-                             {topGifters.map((gifter, index) => (
-                 <div key={gifter.username} className="participant gifter">
-                   <div className="participant-avatar">🎁</div>
-                   <div className="participant-info">
-                     <div className="participant-name">{gifter.username}</div>
-                     <div className="participant-role">Top Gifter #{index + 1}</div>
-                                           <div className="participant-stats">
-                        <span className="gift-total">💰 {currentGiftValues[gifter.username] || gifter.totalValue} coins</span>
-                        <span className="gift-count">🎁 {gifter.giftCount} gifts</span>
-                      </div>
-                   </div>
-                 </div>
-               ))}
+              <div className="participant host">
+                <div className="participant-avatar">👑</div>
+                <div className="participant-info">
+                  <div className="participant-name">Host</div>
+                  <div className="participant-role">Game Master</div>
+                </div>
+              </div>
+              {topGifters.map((gifter, index) => (
+                <div key={gifter.username} className="participant gifter">
+                  <div className="participant-avatar">🎁</div>
+                  <div className="participant-info">
+                    <div className="participant-name">{gifter.username}</div>
+                    <div className="participant-role">Top Gifter #{index + 1}</div>
+                    <div className="participant-stats">
+                      <span className="gift-total">💰 {currentGiftValues[gifter.username] || gifter.totalValue} coins</span>
+                      <span className="gift-count">🎁 {gifter.giftCount} gifts</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
           <button className="start-final-button" onClick={startFinalCompetition}>
@@ -508,40 +533,40 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
               </div>
             </div>
           )}
-          
+
           <div className="live-scores">
             <h4>📊 Live Scores</h4>
             <div className="scoreboard">
               {Object.entries(scores)
-                .sort(([,a], [,b]) => b - a)
+                .sort(([, a], [, b]) => b - a)
                 .map(([player, score], index) => (
-                                     <div key={player} className={`score-item ${index === 0 ? 'leading' : ''}`}>
-                     <div className="player-rank">#{index + 1}</div>
-                     <div className="player-name">
-                       {player}
-                     </div>
-                     <div className="player-score">{score} pts</div>
-                                           {player !== 'host' && topGifters.find(g => g.username === player) && (
-                        <div className="player-gift-stats">
-                          <span className="gift-stat">💰 {currentGiftValues[player] || topGifters.find(g => g.username === player).totalValue}</span>
-                          <span className="gift-stat">🎁 {topGifters.find(g => g.username === player).giftCount}</span>
-                        </div>
-                      )}
-                                           <div className="player-status">
-                        {foundItems[player] ? (
-                          <div className="found-status-container">
-                            <span className="found-status">✅ Found!</span>
-                          </div>
-                        ) : (
-                          <button 
-                            className="found-button"
-                            onClick={() => simulateItemFound(player)}
-                          >
-                            Found Item
-                          </button>
-                        )}
+                  <div key={player} className={`score-item ${index === 0 ? 'leading' : ''}`}>
+                    <div className="player-rank">#{index + 1}</div>
+                    <div className="player-name">
+                      {player}
+                    </div>
+                    <div className="player-score">{score} pts</div>
+                    {player !== 'host' && topGifters.find(g => g.username === player) && (
+                      <div className="player-gift-stats">
+                        <span className="gift-stat">💰 {currentGiftValues[player] || topGifters.find(g => g.username === player).totalValue}</span>
+                        <span className="gift-stat">🎁 {topGifters.find(g => g.username === player).giftCount}</span>
                       </div>
-                   </div>
+                    )}
+                    <div className="player-status">
+                      {foundItems[player] ? (
+                        <div className="found-status-container">
+                          <span className="found-status">✅ Found!</span>
+                        </div>
+                      ) : (
+                        <button
+                          className="found-button"
+                          onClick={() => simulateItemFound(player)}
+                        >
+                          Found Item
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 ))}
             </div>
           </div>
@@ -551,7 +576,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
             <div className="voting-section">
               <div className="vote-buttons">
                 {Object.keys(scores).map(player => (
-                  <button 
+                  <button
                     key={player}
                     className="vote-button"
                     onClick={() => simulateVote(player)}
@@ -565,13 +590,13 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
                   const playerVotes = Object.values(viewerVotes).filter(vote => vote.votedFor === player).length
                   const totalVotes = Object.keys(viewerVotes).length
                   const percentage = totalVotes > 0 ? Math.round((playerVotes / totalVotes) * 100) : 0
-                  
+
                   return (
                     <div key={player} className="vote-result">
                       <span className="vote-player">{player}</span>
                       <div className="vote-bar">
-                        <div 
-                          className="vote-fill" 
+                        <div
+                          className="vote-fill"
                           style={{ width: `${percentage}%` }}
                         ></div>
                       </div>
@@ -582,15 +607,15 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
               </div>
             </div>
           </div>
-          
-          
+
+
         </div>
       )}
 
       {competitionState === 'completed' && (
         <div className="competition-results">
           <h3>🏆 Competition Complete!</h3>
-          
+
           {winner && (
             <div className="winner-announcement">
               <div className="winner-crown">👑</div>
@@ -618,12 +643,12 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
               </div>
             </div>
           )}
-          
+
           <div className="final-standings">
             <h4>Final Standings</h4>
             <div className="standings-list">
               {Object.entries(scores)
-                .sort(([,a], [,b]) => b - a)
+                .sort(([, a], [, b]) => b - a)
                 .map(([player, score], index) => (
                   <div key={player} className={`standing-item ${index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : ''}`}>
                     <div className="standing-rank">
