@@ -14,13 +14,14 @@ function App() {
   const [showFinalCompetition, setShowFinalCompetition] = useState(false)
   const [topGifters, setTopGifters] = useState([])
   const [competitionHistory, setCompetitionHistory] = useState([])
+  const [gameEvents, setGameEvents] = useState([])
 
   const handleGiftCompetitionEnd = (winners) => {
     console.log('🎁 Gift competition ended:', winners)
     setTopGifters(winners)
     setShowGiftCompetition(false)
     setShowFinalCompetition(true)
-    
+
     // Add to competition history
     setCompetitionHistory(prev => [...prev, {
       type: 'gift',
@@ -32,19 +33,35 @@ function App() {
   const handleFinalCompetitionComplete = (results) => {
     console.log('🏆 Final competition completed:', results)
     setShowFinalCompetition(false)
-    
+
     // Add to competition history
     setCompetitionHistory(prev => [...prev, {
       type: 'final',
       results,
+      gameEvents,
       timestamp: new Date().toISOString()
     }])
+
+    // Clear history after 30 seconds
+    setTimeout(() => {
+      setCompetitionHistory([])
+      setGameEvents([])
+    }, 30000)
   }
 
   const resetCompetition = () => {
     setShowGiftCompetition(true)
     setShowFinalCompetition(false)
     setTopGifters([])
+    setGameEvents([])
+  }
+
+  // Handle game events from FinalCompetition
+  const handleGameEvent = (event) => {
+    setGameEvents(prev => [...prev, {
+      ...event,
+      timestamp: new Date().toISOString()
+    }])
   }
 
   return (
@@ -54,11 +71,11 @@ function App() {
           <h1>Scavenger Hunt</h1>
           <p className="subtitle">Join the hunt, enjoy the surprises!</p>
         </div>
-        
+
         <div className="content">
           {/* Gift Competition Phase */}
           {showGiftCompetition && (
-            <GiftCompetition 
+            <GiftCompetition
               isActive={showGiftCompetition}
               onCompetitionEnd={handleGiftCompetitionEnd}
             />
@@ -66,9 +83,10 @@ function App() {
 
           {/* Final Competition Phase */}
           {showFinalCompetition && (
-            <FinalCompetition 
+            <FinalCompetition
               topGifters={topGifters}
               onCompetitionComplete={handleFinalCompetitionComplete}
+              onGameEvent={handleGameEvent}
             />
           )}
 
@@ -92,9 +110,35 @@ function App() {
                             Winners: {event.winners.map(w => w.username).join(', ')}
                           </span>
                         ) : (
-                          <span>
-                            Winner: {event.results.winner?.[0] || 'N/A'}
-                          </span>
+                          <div className="final-competition-details">
+                            <div className="winner-info">
+                              Winner: {event.results.winner?.[0] || 'N/A'}
+                            </div>
+                            {event.gameEvents && event.gameEvents.length > 0 && (
+                              <div className="game-events">
+                                <h4>📊 Game Events:</h4>
+                                {event.gameEvents.map((gameEvent, idx) => (
+                                  <div key={idx} className="game-event">
+                                    {gameEvent.type === 'vote' && (
+                                      <span className="vote-event">
+                                        🗳️ {gameEvent.voter} voted for {gameEvent.participant} (+5 points)
+                                      </span>
+                                    )}
+                                    {gameEvent.type === 'penalty' && (
+                                      <span className="penalty-event">
+                                        ❌ {gameEvent.participant} wrong item penalty (-10 points)
+                                      </span>
+                                    )}
+                                    {gameEvent.type === 'item_found' && (
+                                      <span className="found-event">
+                                        ✅ {gameEvent.participant} found correct item (+20 points)
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                       <div className="history-time">
@@ -119,17 +163,11 @@ function App() {
           {/* Gift Simulator for Testing - Commented out for real viewers */}
           {/* <GiftSimulator /> */}
 
-          {/* Vote Simulator for Testing - Commented out for real viewers */}
-          {/* <VoteSimulator 
-            participants={showFinalCompetition ? ['host', ...topGifters.map(g => g.username)] : []}
-            isActive={showFinalCompetition}
-          /> */}
+          {/* Vote Simulator - Commented out for production */}
+          {/* <VoteSimulator participants={showFinalCompetition ? ['host', ...topGifters.map(g => g.username)] : []} isActive={showFinalCompetition} /> */}
 
-          {/* Comment Simulator for Testing - Commented out for real viewers */}
-          {/* <CommentSimulator 
-            participants={showFinalCompetition ? ['host', ...topGifters.map(g => g.username)] : []}
-            isActive={showFinalCompetition}
-          /> */}
+          {/* Comment Simulator - Commented out for production */}
+          {/* <CommentSimulator participants={showFinalCompetition ? ['host', ...topGifters.map(g => g.username)] : []} isActive={showFinalCompetition} /> */}
 
           {/* Chat Comments */}
           <CommentList comments={comments} setComments={setComments} />

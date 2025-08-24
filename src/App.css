@@ -195,8 +195,51 @@ body {
 }
 
 .history-time {
-  font-size: 0.8rem;
-  color: #9ca3af;
+  font-size: 0.8em;
+  color: #888;
+  margin-top: 5px;
+}
+
+.final-competition-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.winner-info {
+  font-weight: bold;
+}
+
+.game-events {
+  margin-top: 10px;
+}
+
+.game-events h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.game-event {
+  margin: 4px 0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.vote-event {
+  color: #2196F3;
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+.penalty-event {
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.found-event {
+  color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
 }
 
 /* Reset Section Styles */

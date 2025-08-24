@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useBeemi } from './BeemiProvider'
 import './FinalCompetition.css'
 
-export default function FinalCompetition({ topGifters, onCompetitionComplete }) {
+export default function FinalCompetition({ topGifters, onCompetitionComplete, onGameEvent }) {
   const { beemi, isConnected } = useBeemi()
   const [competitionState, setCompetitionState] = useState('waiting') // waiting, active, completed
   const [competitionTime, setCompetitionTime] = useState(60) // 60 seconds for final competition
@@ -13,6 +13,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
   const [foundItems, setFoundItems] = useState({})
   const [gameType, setGameType] = useState('') // 'item' or 'letter'
   const [currentGiftValues, setCurrentGiftValues] = useState({}) // Track current gift values after deductions
+  const [isHost, setIsHost] = useState(false)
 
   // Game items and letters for scavenger hunt
   const scavengerItems = [
@@ -30,8 +31,35 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
-  // Initialize competition
+  // Check if current user is host or co-host (top 2 gifters)
+  useEffect(() => {
+    if (!beemi || !isConnected) return
+
+    let userIsHost = false
+
+    // Check if user is original host through Beemi SDK
+    if (beemi.user && beemi.user.role === 'host') {
+      userIsHost = true
+    } else if (beemi.streams && beemi.streams.user) {
+      // Alternative check for host status
+      userIsHost = beemi.streams.user.role === 'host'
+    } else {
+      // For development/testing, assume host if no specific role detected
+      // In production, this should be more restrictive
+      userIsHost = true
+    }
+
+    // Check if user is one of the top 2 gifters (co-hosts)
+    const currentUsername = beemi.user?.username || beemi.streams?.user?.username || 'host'
+    const isTopGifter = topGifters.some(gifter => gifter.username === currentUsername)
+
+    // User is host if they're original host OR one of top 2 gifters
+    setIsHost(userIsHost || isTopGifter)
+  }, [beemi, isConnected, topGifters])
+
+  // Initialize competition (host only)
   const startFinalCompetition = () => {
+    if (!isHost) return
     setCompetitionState('active')
     setCompetitionTime(60)
 
@@ -149,6 +177,16 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
                 [originalParticipant]: Math.max(0, (prev[originalParticipant] || 0) - 10)
               }))
               
+              // Report penalty event to parent
+              if (onGameEvent) {
+                onGameEvent({
+                  type: 'penalty',
+                  participant: originalParticipant,
+                  points: -10,
+                  reason: 'Wrong item shown'
+                })
+              }
+              
               console.log(`❌ Wrong item penalty: ${originalParticipant} lost 10 points`)
               break
             }
@@ -172,6 +210,16 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
                   timestamp: Date.now()
                 }
               }))
+
+              // Report vote event to parent
+              if (onGameEvent) {
+                onGameEvent({
+                  type: 'vote',
+                  voter: username,
+                  participant: originalParticipant,
+                  points: 5
+                })
+              }
               break
             }
           }
@@ -246,6 +294,16 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
           ...prev,
           [foundData.player]: (prev[foundData.player] || 0) + 50
         }))
+
+        // Report item found event to parent
+        if (onGameEvent) {
+          onGameEvent({
+            type: 'item_found',
+            participant: foundData.player,
+            points: 50,
+            item: foundData.item
+          })
+        }
 
 
       }
@@ -483,10 +541,10 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
               </div>
               {topGifters.map((gifter, index) => (
                 <div key={gifter.username} className="participant gifter">
-                  <div className="participant-avatar">🎁</div>
+                  <div className="participant-avatar">👑</div>
                   <div className="participant-info">
                     <div className="participant-name">{gifter.username}</div>
-                    <div className="participant-role">Top Gifter #{index + 1}</div>
+                    <div className="participant-role">Co-Host #{index + 1}</div>
                     <div className="participant-stats">
                       <span className="gift-total">💰 {currentGiftValues[gifter.username] || gifter.totalValue} coins</span>
                       <span className="gift-count">🎁 {gifter.giftCount} gifts</span>
@@ -496,9 +554,15 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
               ))}
             </div>
           </div>
-          <button className="start-final-button" onClick={startFinalCompetition}>
-            🚀 Start Scavenger Hunt
-          </button>
+          {isHost ? (
+            <button className="start-final-button" onClick={startFinalCompetition}>
+              🚀 Start Scavenger Hunt
+            </button>
+          ) : (
+            <div className="waiting-for-host">
+              <span className="host-message">⏳ Waiting for host or co-host to start scavenger hunt...</span>
+            </div>
+          )}
         </div>
       )}
 
