@@ -116,20 +116,20 @@ function App() {
             </div>
           )}
 
-          {/* Gift Simulator for Testing */}
-          <GiftSimulator />
+          {/* Gift Simulator for Testing - Commented out for real viewers */}
+          {/* <GiftSimulator /> */}
 
-          {/* Vote Simulator for Testing */}
-          <VoteSimulator 
+          {/* Vote Simulator for Testing - Commented out for real viewers */}
+          {/* <VoteSimulator 
             participants={showFinalCompetition ? ['host', ...topGifters.map(g => g.username)] : []}
             isActive={showFinalCompetition}
-          />
+          /> */}
 
-          {/* Comment Simulator for Testing */}
-          <CommentSimulator 
+          {/* Comment Simulator for Testing - Commented out for real viewers */}
+          {/* <CommentSimulator 
             participants={showFinalCompetition ? ['host', ...topGifters.map(g => g.username)] : []}
             isActive={showFinalCompetition}
-          />
+          /> */}
 
           {/* Chat Comments */}
           <CommentList comments={comments} setComments={setComments} />

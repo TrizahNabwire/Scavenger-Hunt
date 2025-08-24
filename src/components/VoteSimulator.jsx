@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useBeemi } from './BeemiProvider'
 import './VoteSimulator.css'
 
@@ -6,6 +6,24 @@ export default function VoteSimulator({ participants, isActive }) {
   const { beemi, isConnected } = useBeemi()
   const [isSimulating, setIsSimulating] = useState(false)
   const [simulationInterval, setSimulationInterval] = useState(null)
+  const [isHost, setIsHost] = useState(false)
+
+  // Check if current user is host
+  useEffect(() => {
+    if (!beemi || !isConnected) return
+
+    // Check if user is host through Beemi SDK
+    if (beemi.user && beemi.user.role === 'host') {
+      setIsHost(true)
+    } else if (beemi.streams && beemi.streams.user) {
+      // Alternative check for host status
+      setIsHost(beemi.streams.user.role === 'host')
+    } else {
+      // For development/testing, assume host if no specific role detected
+      // In production, this should be more restrictive
+      setIsHost(true)
+    }
+  }, [beemi, isConnected])
 
   const sendVoteEvent = (votedFor) => {
     if (!beemi || !isConnected || !isActive) return
@@ -75,6 +93,15 @@ export default function VoteSimulator({ participants, isActive }) {
         <div className="simulator-header">
           <h3>🗳️ Vote Simulator</h3>
           <p>No participants available for voting</p>
+          {isHost ? (
+            <button className="start-competition-button" onClick={() => window.location.reload()}>
+              🎯 Start Competition
+            </button>
+          ) : (
+            <div className="waiting-for-host">
+              <span className="host-message">⏳ Waiting for host to start...</span>
+            </div>
+          )}
         </div>
       </div>
     )

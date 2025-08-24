@@ -289,7 +289,7 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
 
   
 
-  // Simulate item found for demo purposes
+  // Handle item found - player wins immediately
   const simulateItemFound = (player) => {
     if (competitionState === 'active') {
       // Generate a realistic item name based on the challenge
@@ -340,11 +340,51 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
         submittedItem = words[Math.floor(Math.random() * words.length)]
       }
       
+      // Mark item as found for this player
+      setFoundItems(prev => ({
+        ...prev,
+        [player]: {
+          item: submittedItem,
+          timestamp: Date.now()
+        }
+      }))
+
+      // Player wins immediately - award winning score
+      const winningScore = 1000
+      setScores(prev => ({
+        ...prev,
+        [player]: winningScore
+      }))
+
+      // Set winner and end competition
+      setWinner([player, winningScore])
+      setCompetitionState('completed')
+      setCompetitionTime(0)
+
+      // Call completion callback
+      if (onCompetitionComplete) {
+        onCompetitionComplete({
+          winner: [player, winningScore],
+          foundItems: {
+            ...foundItems,
+            [player]: {
+              item: submittedItem,
+              timestamp: Date.now()
+            }
+          },
+          finalScores: {
+            ...scores,
+            [player]: winningScore
+          }
+        })
+      }
+
       const foundEvent = {
         data: {
           player: player,
           item: submittedItem,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          winner: true
         }
       }
 
@@ -352,11 +392,11 @@ export default function FinalCompetition({ topGifters, onCompetitionComplete }) 
       const customEvent = new CustomEvent('beemi-item-found', { detail: foundEvent })
       window.dispatchEvent(customEvent)
       
-             if (window.itemFoundHandler) {
-         window.itemFoundHandler(foundEvent)
-       }
-     }
-   }
+      if (window.itemFoundHandler) {
+        window.itemFoundHandler(foundEvent)
+      }
+    }
+  }
 
   // Simulate viewer vote for demo purposes
   const simulateVote = (votedFor) => {
